@@ -1,0 +1,10 @@
+ _    _  _____   _    _               _
+| |  | |/  ___| | |  | |             | |
+| |  | |\ `--.  | |  | |  ___   _ __ | | __
+| |/\| | `--. \ | |/\| | / _ \ | '__|| |/ /
+\  /\  //\__/ / \  /\  /| (_) || |   |   <
+ \/  \/ \____/   \/  \/  \___/ |_|   |_|\_\
+
+
+${application.title} ${application.version}
+Powered by Mauro Hahn - WS WORK Team with Spring Boot ${spring-boot.version}

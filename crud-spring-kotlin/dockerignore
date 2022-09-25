@@ -1,0 +1,14 @@
+# common
+.gradle/
+.idea/
+build/
+gradle/
+.settings/
+.project
+.classpath
+
+.git/
+
+# docker
+Dockerfile
+dockerignore

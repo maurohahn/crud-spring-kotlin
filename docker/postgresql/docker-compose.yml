@@ -1,0 +1,28 @@
+version: '3'
+
+services:
+    pg-db:
+        image: postgres:14.5
+        container_name: local_pg
+        restart: unless-stopped
+        networks:
+            - local-pg-net
+        logging:
+            options:
+                max-size: 10m
+                max-file: "3"
+        # env_file:
+        #     - .env
+        environment:
+            POSTGRES_DB: my_db
+            POSTGRES_USER: my_user
+            POSTGRES_PASSWORD: my_secret
+            PGDATA: /var/lib/postgresql/data
+        ports:
+            - "5432:5432"
+        # volumes:
+            # - ./data:/var/lib/postgresql/data
+networks:
+    local-pg-net:
+        ipam:
+            driver: default

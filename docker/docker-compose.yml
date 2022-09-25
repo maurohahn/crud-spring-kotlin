@@ -1,0 +1,22 @@
+version: '3'
+
+services:
+    api:
+        image: mh/crud-api    
+        container_name: mh_crud_api
+        restart: unless-stopped
+        networks:
+            - mh-crud-net
+        ports:
+            - "8080:8080"
+        logging:
+            options:
+                max-file: "5"
+                max-size: "100m"
+        env_file:
+            - .env            
+
+networks:
+    mh-crud-net:
+        ipam:
+            driver: default
