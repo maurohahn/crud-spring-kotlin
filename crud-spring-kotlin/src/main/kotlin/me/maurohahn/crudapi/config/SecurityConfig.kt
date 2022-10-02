@@ -1,11 +1,7 @@
 package me.maurohahn.crudapi.config
 
-import me.maurohahn.crudapi.auth.AppAuthenticationManager
-import me.maurohahn.crudapi.auth.JWTAuthenticationFilter
-import me.maurohahn.crudapi.auth.JWTAuthorizationFilter
-import me.maurohahn.crudapi.auth.TokenProvider
+import me.maurohahn.crudapi.auth.*
 import org.springframework.context.annotation.Bean
-import org.springframework.http.HttpMethod
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
 import org.springframework.security.config.annotation.web.builders.WebSecurity
@@ -21,16 +17,17 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource
 @EnableWebSecurity
 @EnableGlobalMethodSecurity(prePostEnabled = true)
 class SecurityConfig(
-    private val authManager: AppAuthenticationManager,
-    private val tokenProvider: TokenProvider
-
+    private val authManager: AuthManager,
+    private val tokenProvider: TokenProvider,
+    private val authService: AuthService
 ) {
     @Bean
     @Throws(Exception::class)
     fun filterChain(http: HttpSecurity): SecurityFilterChain {
 
         http
-            .cors().and()
+            .cors()
+            .and()
             .csrf().disable()
             .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS) // no sessions
             .and()
@@ -40,12 +37,12 @@ class SecurityConfig(
              * https://stackoverflow.com/questions/50536292/difference-between-antmatcher-and-mvcmatcher
              */
 
-            // ADMIN full access
-            // .mvcMatchers("/**").hasAnyAuthority("ADMIN")
+            .mvcMatchers("/**").hasAnyRole("AUTH_USER")
+            .mvcMatchers("/login/2fa").hasAnyRole("PRE_AUTH_USER")
 
             .anyRequest().authenticated()
             .and()
-            .addFilter(JWTAuthenticationFilter(authManager, tokenProvider))
+            .addFilter(JWTAuthenticationFilter(authManager, authService))
             .addFilter(JWTAuthorizationFilter(authManager, tokenProvider))
         return http.build()
     }
@@ -72,19 +69,10 @@ class SecurityConfig(
     fun corsConfigurationSource(): CorsConfigurationSource {
 
         val config = CorsConfiguration().apply {
-            allowedOrigins = listOf("*")
-            allowedMethods = listOf("POST", "PUT", "DELETE", "GET", "OPTIONS", "HEAD")
-
-            // setAllowCredentials(true) is important, otherwise:
-            // The value of the 'Access-Control-Allow-Origin' header in the response
-            // must not be the wildcard '*' when the request's credentials mode is 'include'.
             allowCredentials = true
-
-            // setAllowedHeaders is important! Without it, OPTIONS preflight request
-            // will fail with 403 Invalid CORS request
-            // use @CrossOrigin in login endpoint --> fun login
+            allowedOriginPatterns = listOf("*")
             allowedHeaders = listOf("Authorization", "Cache-Control", "Content-Type")
-
+            allowedMethods = listOf("POST", "PUT", "DELETE", "GET", "OPTIONS", "HEAD")
         }
 
         val source = UrlBasedCorsConfigurationSource().apply {

@@ -15,16 +15,18 @@ import javax.validation.Valid
 @RequestMapping("/permission")
 class PermissionController(private val service: PermissionService) {
 
+    @PreAuthorize("hasAnyAuthority('ADMIN','PERMISSION_READ')")
     @Operation(summary = "find a permission by id")
     @GetMapping("/{encryptedId}")
     fun findOne(@PathVariable("encryptedId") encryptedId: String): ResponseEntity<PermissionDto> {
-        val id = CryptoProvider.decryptGen(encryptedId).toLong()
+        val id = CryptoProvider.decryptText(encryptedId).toLong()
         val permission = service.findOne(id)
         val result = PermissionDto(permission)
 
         return ResponseEntity(result, HttpStatus.OK)
     }
 
+    @PreAuthorize("hasAnyAuthority('ADMIN','PERMISSION_READ')")
     @Operation(summary = "returns all permissions")
     @GetMapping("/")
     fun findAll(): ResponseEntity<List<PermissionDto>> {
@@ -35,9 +37,9 @@ class PermissionController(private val service: PermissionService) {
         return ResponseEntity(resultList, HttpStatus.OK)
     }
 
+    @PreAuthorize("hasAnyAuthority('ADMIN','PERMISSION_WRITE')")
     @Operation(summary = "create a permission")
     @PostMapping("/")
-    @PreAuthorize("hasAnyAuthority('ADMIN')")
     fun create(@RequestBody @Valid data: EditPermissionDto): ResponseEntity<PermissionDto> {
         val permissionSaved = service.create(data)
         val result = PermissionDto(permissionSaved)
@@ -45,9 +47,9 @@ class PermissionController(private val service: PermissionService) {
         return ResponseEntity(result, HttpStatus.CREATED)
     }
 
+    @PreAuthorize("hasAnyAuthority('ADMIN','PERMISSION_WRITE')")
     @Operation(summary = "create batch permissions")
     @PostMapping("/create-in-batch")
-    @PreAuthorize("hasAnyAuthority('ADMIN')")
     fun createInBatch(@RequestBody @Valid data: List<EditPermissionDto>):
             ResponseEntity<List<PermissionDto>> {
         val permissionListSaved = service.createInBatch(data)
@@ -56,23 +58,23 @@ class PermissionController(private val service: PermissionService) {
         return ResponseEntity(resultList, HttpStatus.CREATED)
     }
 
+    @PreAuthorize("hasAnyAuthority('ADMIN','PERMISSION_WRITE')")
     @Operation(summary = "update a permission")
     @PutMapping("/{encryptedId}")
-    @PreAuthorize("hasAnyAuthority('ADMIN')")
     fun update(@PathVariable("encryptedId") encryptedId: String, @RequestBody @Valid data: EditPermissionDto):
             ResponseEntity<PermissionDto> {
-        val id = CryptoProvider.decryptGen(encryptedId).toLong()
+        val id = CryptoProvider.decryptText(encryptedId).toLong()
         val permissionUpdated = service.update(id, data)
         val result = PermissionDto(permissionUpdated)
 
         return ResponseEntity(result, HttpStatus.OK)
     }
 
+    @PreAuthorize("hasAnyAuthority('ADMIN','PERMISSION_DELETE')")
     @Operation(summary = "delete a permission")
     @DeleteMapping("/{encryptedId}")
-    @PreAuthorize("hasAnyAuthority('ADMIN')")
     fun delete(@PathVariable("encryptedId") encryptedId: String): ResponseEntity<Any> {
-        val id = CryptoProvider.decryptGen(encryptedId).toLong()
+        val id = CryptoProvider.decryptText(encryptedId).toLong()
         service.delete(id)
         return ResponseEntity(HttpStatus.NO_CONTENT)
     }

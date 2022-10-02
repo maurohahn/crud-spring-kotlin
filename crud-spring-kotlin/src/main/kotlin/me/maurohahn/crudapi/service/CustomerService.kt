@@ -11,8 +11,16 @@ class CustomerService(
     private val customerRepository: CustomerRepository
 ) {
 
-    fun findOne(id: Long): Customer {
+    fun verifyOne(id: Long) {
+        val wasFound = customerRepository.existsById(id)
 
+        if (!wasFound) {
+            throw NotFoundException()
+        }
+
+    }
+
+    fun findOne(id: Long): Customer {
         return customerRepository.findById(id).orElseThrow { NotFoundException() }
     }
 

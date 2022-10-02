@@ -1,9 +1,12 @@
 package me.maurohahn.crudapi.service
 
+import me.maurohahn.crudapi.auth.AuthenticationToken
+import me.maurohahn.crudapi.auth.Token
 import me.maurohahn.crudapi.dto.CredentialsDto
 import me.maurohahn.crudapi.dto.EditUserDto
 import me.maurohahn.crudapi.entity.User
 import me.maurohahn.crudapi.exception.NotFoundException
+import me.maurohahn.crudapi.exception.UnauthorizedException
 import me.maurohahn.crudapi.repository.UserRepository
 import me.maurohahn.crudapi.util.crypto.CryptoProvider
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
@@ -51,8 +54,8 @@ class UserService(
             this.email = data.email
             this.isActive = data.isActive
         }
-        val idsGroups = data.groupEncryptedIds.map { CryptoProvider.decryptGen(it).toLong() }
-        newUser.groups = groupService.findMany(idsGroups).toSet()
+        val idsGroups = data.groupEncryptedIds.map { CryptoProvider.decryptText(it).toLong() }
+        newUser.groups = groupService.findMany(idsGroups).toMutableSet()
 
         return userRepository.save(newUser)
     }
@@ -68,8 +71,8 @@ class UserService(
                 this.isActive = data.isActive
             }
 
-            val idsGroups = data.groupEncryptedIds.map { CryptoProvider.decryptGen(it).toLong() }
-            newUser.groups = groupService.findMany(idsGroups).toSet()
+            val idsGroups = data.groupEncryptedIds.map { CryptoProvider.decryptText(it).toLong() }
+            newUser.groups = groupService.findMany(idsGroups).toMutableSet()
 
             newUserList.add(newUser)
         }
@@ -82,25 +85,33 @@ class UserService(
 
         userFound.apply {
             this.name = data.name
-            this.password = data.password
             this.email = data.email
             this.isActive = data.isActive
         }
 
-        val idsGroups = data.groupEncryptedIds.map { CryptoProvider.decryptGen(it).toLong() }
-        userFound.groups = groupService.findMany(idsGroups).toSet()
+        val idsGroups = data.groupEncryptedIds.map { CryptoProvider.decryptText(it).toLong() }
+        userFound.groups = groupService.findMany(idsGroups).toMutableSet()
 
         return userRepository.save(userFound)
     }
 
-    fun resetUserPassword(data: CredentialsDto) {
-        val (email, password) = data
+    fun resetUserPassword(token: Token, data: CredentialsDto) {
 
-        val userFound = findByEmail(email)
+        val isAdmin = token.permissions.contains("ADMIN")
+        val isSameUser = token.sub == data.email
 
-        userFound.password = bCryptPasswordEncoder.encode(password)
+        if (isAdmin || isSameUser) {
 
-        userRepository.save(userFound)
+            val (email, password) = data
+
+            val userFound = findByEmail(email)
+
+            userFound.password = bCryptPasswordEncoder.encode(password)
+
+            userRepository.save(userFound)
+        } else {
+            throw UnauthorizedException()
+        }
 
     }
 

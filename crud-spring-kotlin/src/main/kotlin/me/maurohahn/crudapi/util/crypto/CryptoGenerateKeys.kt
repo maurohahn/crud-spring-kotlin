@@ -19,9 +19,9 @@ class CryptoGenerateKeys {
 
         val pair: KeyPair = generator.generateKeyPair()
 
-        writeToFile("/keys/" + CryptoConstantes.GENERIC_PRIVATE_KEY,pair.private.encoded)
+        writeToFile(CryptoConstantes.KEY_PATH + CryptoConstantes.GENERIC_PRIVATE_KEY, pair.private.encoded)
 
-        writeToFile("/keys/" + CryptoConstantes.GENERIC_PUBLIC_KEY,pair.public.encoded)
+        writeToFile(CryptoConstantes.KEY_PATH + CryptoConstantes.GENERIC_PUBLIC_KEY, pair.public.encoded)
 
     }
 

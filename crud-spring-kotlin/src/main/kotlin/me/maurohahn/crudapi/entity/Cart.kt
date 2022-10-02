@@ -29,12 +29,12 @@ class Cart : BaseEntity() {
         joinColumns = [JoinColumn(name = "product_id")],
         inverseJoinColumns = [JoinColumn(name = "cart_id")]
     )
-    var products = setOf<Product>()
+    var products: MutableSet<Product> = mutableSetOf()
 
     @PostLoad
     @PostPersist
     fun onGetFromDB() {
-        encryptedId = CryptoProvider.encryptGen(id.toString())
+        encryptedId = CryptoProvider.encryptText(id.toString())
     }
 
 }

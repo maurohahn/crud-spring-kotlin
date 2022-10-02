@@ -23,11 +23,11 @@ class Permission : BaseEntity() {
     var isDefault: Boolean = false
 
     @ManyToMany(fetch = FetchType.LAZY, cascade = [CascadeType.DETACH], mappedBy = "permissions")
-    var groups = setOf<Group>()
+    var groups: MutableSet<Group> = mutableSetOf()
 
     @PostLoad
     @PostPersist
     fun onGetFromDB() {
-        encryptedId = CryptoProvider.encryptGen(id.toString())
+        encryptedId = CryptoProvider.encryptText(id.toString())
     }
 }

@@ -61,10 +61,10 @@ create table customers (
 
 create table carts (
     id bigint primary key default nextval('carts_seq'),
-    customers_id bigint not null,
+    customer_id bigint not null,
     created_at timestamp not null default current_timestamp,
     updated_at timestamp not null,
-    constraint carts_customers_id_fkey foreign key (customers_id) references customers(id) on delete restrict on update cascade
+    constraint carts_customer_id_fkey foreign key (customer_id) references customers(id) on delete restrict on update cascade
 );
 
 create table products_carts (

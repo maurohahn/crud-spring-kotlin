@@ -40,7 +40,7 @@ class Customer : BaseEntity() {
     @PostLoad
     @PostPersist
     fun onGetFromDB() {
-        encryptedId = CryptoProvider.encryptGen(id.toString())
+        encryptedId = CryptoProvider.encryptText(id.toString())
     }
 
 }

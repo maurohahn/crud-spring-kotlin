@@ -8,6 +8,7 @@ data class CredentialsDto(
     @Email
     @NotNull(message = "email cannot be null")
     var email: String,
+
     @Size(min = 8, message = "password cannot be less than 8")
     @NotNull(message = "password cannot be null")
     var password: String

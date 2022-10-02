@@ -42,8 +42,8 @@ class GroupService(
             this.isActive = data.isActive
         }
 
-        val idsPermissions = data.permissionEncryptedIds.map { CryptoProvider.decryptGen(it).toLong() }
-        newGroup.permissions = permissionService.findMany(idsPermissions).toSet()
+        val idsPermissions = data.permissionEncryptedIds.map { CryptoProvider.decryptText(it).toLong() }
+        newGroup.permissions = permissionService.findMany(idsPermissions).toMutableSet()
 
         return groupRepository.save(newGroup)
     }
@@ -57,8 +57,8 @@ class GroupService(
                 this.isActive = data.isActive
             }
 
-            val idsPermissions = data.permissionEncryptedIds.map { CryptoProvider.decryptGen(it).toLong() }
-            newGroup.permissions = permissionService.findMany(idsPermissions).toSet()
+            val idsPermissions = data.permissionEncryptedIds.map { CryptoProvider.decryptText(it).toLong() }
+            newGroup.permissions = permissionService.findMany(idsPermissions).toMutableSet()
 
             newGroupList.add(newGroup)
         }
@@ -74,8 +74,8 @@ class GroupService(
             this.isActive = data.isActive
         }
 
-        val idsPermissions = data.permissionEncryptedIds.map { CryptoProvider.decryptGen(it).toLong() }
-        groupFound.permissions = permissionService.findMany(idsPermissions).toSet()
+        val idsPermissions = data.permissionEncryptedIds.map { CryptoProvider.decryptText(it).toLong() }
+        groupFound.permissions = permissionService.findMany(idsPermissions).toMutableSet()
 
         return groupRepository.save(groupFound)
     }

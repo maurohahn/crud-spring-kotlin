@@ -32,7 +32,7 @@ class User : BaseEntity() {
         joinColumns = [JoinColumn(name = "user_id")],
         inverseJoinColumns = [JoinColumn(name = "group_id")]
     )
-    var groups = setOf<Group>()
+    var groups: MutableSet<Group> = mutableSetOf()
 
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "last_login_at")
@@ -41,7 +41,7 @@ class User : BaseEntity() {
     @PostLoad
     @PostPersist
     fun onGetFromDB() {
-        encryptedId = CryptoProvider.encryptGen(id.toString())
+        encryptedId = CryptoProvider.encryptText(id.toString())
 
     }
 

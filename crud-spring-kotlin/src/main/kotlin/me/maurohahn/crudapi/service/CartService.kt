@@ -40,12 +40,15 @@ class CartService(
     fun create(data: EditCartDto): Cart {
         val newCart = Cart()
 
-        val customerId = CryptoProvider.decryptGen(data.customerEncryptedId).toLong()
-        val customer = customerService.findOne(customerId)
-        newCart.customerId = customer.id
+        val customerId = CryptoProvider.decryptText(data.customerEncryptedId).toLong()
+        customerService.verifyOne(customerId)
 
-        val idsProducts = data.productEncryptedIds.map { CryptoProvider.decryptGen(it).toLong() }
-        newCart.products = productService.findMany(idsProducts).toSet()
+
+//        val customer = customerService.findOne(customerId)
+        newCart.customerId = customerId
+
+        val idsProducts = data.productEncryptedIds.map { CryptoProvider.decryptText(it).toLong() }
+        newCart.products = productService.findMany(idsProducts).toMutableSet()
 
 
         return cartRepository.save(newCart)
@@ -57,12 +60,12 @@ class CartService(
         dataList.forEach { data ->
             val newCart = Cart()
 
-            val customerId = CryptoProvider.decryptGen(data.customerEncryptedId).toLong()
+            val customerId = CryptoProvider.decryptText(data.customerEncryptedId).toLong()
             val customer = customerService.findOne(customerId)
             newCart.customerId = customer.id
 
-            val idsProducts = data.productEncryptedIds.map { CryptoProvider.decryptGen(it).toLong() }
-            newCart.products = productService.findMany(idsProducts).toSet()
+            val idsProducts = data.productEncryptedIds.map { CryptoProvider.decryptText(it).toLong() }
+            newCart.products = productService.findMany(idsProducts).toMutableSet()
 
             newCartList.add(newCart)
         }
@@ -73,12 +76,12 @@ class CartService(
     fun update(id: Long, data: EditCartDto): Cart {
         val cartFound = findOne(id)
 
-        val customerId = CryptoProvider.decryptGen(data.customerEncryptedId).toLong()
+        val customerId = CryptoProvider.decryptText(data.customerEncryptedId).toLong()
         val customer = customerService.findOne(customerId)
         cartFound.customerId = customer.id
 
-        val idsProducts = data.productEncryptedIds.map { CryptoProvider.decryptGen(it).toLong() }
-        cartFound.products = productService.findMany(idsProducts).toSet()
+        val idsProducts = data.productEncryptedIds.map { CryptoProvider.decryptText(it).toLong() }
+        cartFound.products = productService.findMany(idsProducts).toMutableSet()
 
         return cartRepository.save(cartFound)
     }

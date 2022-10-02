@@ -1,20 +1,18 @@
 package me.maurohahn.crudapi.auth
 
-import io.jsonwebtoken.Claims
+import com.fasterxml.jackson.core.JsonProcessingException
+import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import io.jsonwebtoken.Jwts
 import io.jsonwebtoken.SignatureAlgorithm
 import io.jsonwebtoken.security.Keys
 import org.springframework.beans.factory.annotation.Value
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
-import org.springframework.security.core.Authentication
-import org.springframework.security.core.userdetails.User
 import org.springframework.stereotype.Component
-import java.util.*
+import java.io.IOException
 import java.util.concurrent.TimeUnit
+import javax.annotation.PostConstruct
 
 @Component
 class TokenProvider(
-    private val userDetailsService: AppUserDetailsService,
     @Value("\${api.jwt.secret}")
     private val secret: String,
     @Value("\${api.jwt.expiration}")
@@ -23,76 +21,81 @@ class TokenProvider(
 
     private val key = Keys.hmacShaKeyFor(secret.toByteArray())
 
-    fun createToken(authentication: Authentication): String {
+    private val mapper = jacksonObjectMapper()
+
+    @Throws(JsonProcessingException::class)
+    fun encode(jwtObj: Token): String {
         val iat = System.currentTimeMillis()
         val exp = iat + TimeUnit.HOURS.toMillis(expiration)
 
-        val authClaims: MutableList<String> = mutableListOf()
-
-        authentication.authorities?.let { authorities ->
-            authorities.forEach { claim -> authClaims.add(claim.toString()) }
+        jwtObj.also {
+            it.iat = iat
+            it.exp = exp
         }
 
+        val payload = mapper.writeValueAsString(jwtObj)
 
         return Jwts.builder()
-            .setSubject(authentication.name)
-            .claim("auth", authClaims)
-            .setIssuedAt(Date())
-            .setExpiration(Date(exp))
+            .setPayload(payload)
+//            .claim("auth", authClaims)
             .signWith(key, SignatureAlgorithm.HS512)
             .compact()
     }
 
-    fun refreshToken(token: String): String {
+    @Throws(IOException::class)
+    fun decode(jwtString: String): Token {
+
+        val payload = Jwts.parserBuilder()
+            .setSigningKey(key)
+            .build()
+            .parse(jwtString)
+            .body
+
+        val json = mapper.writeValueAsString(payload)
+
+        return mapper.readValue(json, Token::class.java)
+    }
+
+    fun refreshToken(headerAuth: String): String {
+        val authentication = getAuthentication(headerAuth)
+
         val iat = System.currentTimeMillis()
         val exp = iat + TimeUnit.HOURS.toMillis(expiration)
 
-        val claims = getClaimsToken(token)
+        val newToken = authentication?.getToken()!!
 
-        if (claims != null) {
-            claims.issuedAt = Date(iat)
-            claims.expiration = Date(exp)
+        newToken.apply {
+            this.iat = iat
+            this.exp = exp
         }
 
-        return Jwts.builder().setClaims(claims).signWith(key, SignatureAlgorithm.HS512).compact()
+        return encode(newToken)
     }
 
-    fun isTokenValid(token: String): Boolean {
-        val claims = getClaimsToken(token)
-        if (claims != null) {
-            val username = claims.subject
-            val expirationDate = claims.expiration
-            val now = Date(System.currentTimeMillis())
-            if (username != null && expirationDate != null && now.before(expirationDate)) {
+    fun isTokenValid(headerAuth: String): Boolean {
+        val authentication = getAuthentication(headerAuth)
+
+        val token = authentication?.getToken()
+
+        if (token != null) {
+            val username = token.sub
+
+            val expirationDate = token.exp ?: 0
+            val now = System.currentTimeMillis()
+
+            if (username != null && expirationDate >= now) {
                 return true
             }
         }
         return false
     }
 
-    private fun getClaimsToken(token: String): Claims? {
-
+    fun getAuthentication(headerAuth: String): AuthenticationToken? {
         return try {
+            val token = headerAuth.replace("Bearer ", "")
 
-            val tokenValue = token.replace("Bearer ", "")
-            Jwts.parserBuilder().setSigningKey(secret.toByteArray()).build().parseClaimsJws(tokenValue).body
-        } catch (e: Exception) {
-            null
-        }
-    }
-
-    fun getAuthentication(token: String): Authentication? {
-        return try {
-            val tokenValue = token.replace("Bearer ", "")
-
-            val claims = Jwts.parserBuilder()
-                .setSigningKey(key)
-                .build()
-                .parseClaimsJws(tokenValue)
-
-            val principal = userDetailsService.loadUserByClaims(claims)
-
-            UsernamePasswordAuthenticationToken(principal, tokenValue, principal.authorities)
+            val principal = decode(token)
+            AuthenticationToken(principal)
 
         } catch (e: Exception) {
             null

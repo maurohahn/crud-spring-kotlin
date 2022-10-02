@@ -7,4 +7,6 @@ object CryptoConstantes {
     const val HTTP_CHAR_EQUAL = "__equal__"
     const val HTTP_CHAR_SLASH = "__slash__"
     const val HTTP_CHAR_PLUS = "__plus__"
+    const val KEY_PATH = "/keys/"
+    const val AES_KEY = "secretKey"
 }

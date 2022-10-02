@@ -28,7 +28,7 @@ class Group : BaseEntity() {
         joinColumns = [JoinColumn(name = "group_id")],
         inverseJoinColumns = [JoinColumn(name = "permission_id")]
     )
-    var permissions = setOf<Permission>()
+    var permissions: MutableSet<Permission> = mutableSetOf()
 
     @ManyToMany(fetch = FetchType.LAZY, cascade = [CascadeType.DETACH], mappedBy = "groups")
     var users = setOf<User>()
@@ -36,6 +36,6 @@ class Group : BaseEntity() {
     @PostLoad
     @PostPersist
     fun onGetFromDB() {
-        encryptedId = CryptoProvider.encryptGen(id.toString())
+        encryptedId = CryptoProvider.encryptText(id.toString())
     }
 }

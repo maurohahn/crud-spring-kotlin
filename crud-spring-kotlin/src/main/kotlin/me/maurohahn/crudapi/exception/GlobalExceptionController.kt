@@ -18,10 +18,10 @@ class GlobalExceptionController {
     private val logger = LoggerFactory.getLogger(this.javaClass)
 
     @ExceptionHandler(Throwable::class)
-    fun generalExceptionHandler(throwable: Throwable, request: WebRequest): ResponseEntity<*> {
+    fun generalExceptionHandler(throwable: Throwable, req: WebRequest): ResponseEntity<*> {
         logger.error(throwable.message, throwable)
 
-        val path = (request as ServletWebRequest).request.requestURI
+        val path = (req as ServletWebRequest).request.requestURI
 
         when {
             throwable is HttpException -> {

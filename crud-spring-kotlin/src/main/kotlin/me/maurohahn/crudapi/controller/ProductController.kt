@@ -1,6 +1,7 @@
 package me.maurohahn.crudapi.controller
 
 import io.swagger.v3.oas.annotations.Operation
+import me.maurohahn.crudapi.auth.AuthenticationToken
 import me.maurohahn.crudapi.dto.EditProductDto
 import me.maurohahn.crudapi.dto.ProductDto
 import me.maurohahn.crudapi.service.ProductService
@@ -15,19 +16,22 @@ import javax.validation.Valid
 @RequestMapping("/product")
 class ProductController(private val service: ProductService) {
 
+    @PreAuthorize("hasAnyAuthority('ADMIN','PRODUCT_READ')")
     @Operation(summary = "find a product by id")
     @GetMapping("/{encryptedId}")
     fun findOne(@PathVariable("encryptedId") encryptedId: String): ResponseEntity<ProductDto> {
-        val id = CryptoProvider.decryptGen(encryptedId).toLong()
+        val id = CryptoProvider.decryptText(encryptedId).toLong()
         val product = service.findOne(id)
         val result = ProductDto(product)
 
         return ResponseEntity(result, HttpStatus.OK)
     }
 
+
+    @PreAuthorize("hasAnyAuthority('ADMIN','PRODUCT_READ')")
     @Operation(summary = "returns all products")
     @GetMapping("/")
-    fun findAll(): ResponseEntity<List<ProductDto>> {
+    fun findAll(authentication: AuthenticationToken): ResponseEntity<List<ProductDto>> {
         val productList = service.findAll()
 
         val resultList = productList.map { ProductDto(it) }
@@ -35,9 +39,9 @@ class ProductController(private val service: ProductService) {
         return ResponseEntity(resultList, HttpStatus.OK)
     }
 
+    @PreAuthorize("hasAnyAuthority('ADMIN','PRODUCT_WRITE')")
     @Operation(summary = "create a product")
     @PostMapping("/")
-    @PreAuthorize("hasAnyAuthority('ADMIN')")
     fun create(@RequestBody @Valid data: EditProductDto): ResponseEntity<ProductDto> {
         val productSaved = service.create(data)
         val result = ProductDto(productSaved)
@@ -45,9 +49,9 @@ class ProductController(private val service: ProductService) {
         return ResponseEntity(result, HttpStatus.CREATED)
     }
 
+    @PreAuthorize("hasAnyAuthority('ADMIN','PRODUCT_WRITE')")
     @Operation(summary = "create batch products")
     @PostMapping("/create-in-batch")
-    @PreAuthorize("hasAnyAuthority('ADMIN')")
     fun createInBatch(@RequestBody @Valid data: List<EditProductDto>):
             ResponseEntity<List<ProductDto>> {
         val productListSaved = service.createInBatch(data)
@@ -56,23 +60,23 @@ class ProductController(private val service: ProductService) {
         return ResponseEntity(resultList, HttpStatus.CREATED)
     }
 
+    @PreAuthorize("hasAnyAuthority('ADMIN','PRODUCT_WRITE')")
     @Operation(summary = "update a product")
     @PutMapping("/{encryptedId}")
-    @PreAuthorize("hasAnyAuthority('ADMIN')")
     fun update(@PathVariable("encryptedId") encryptedId: String, @RequestBody @Valid data: EditProductDto):
             ResponseEntity<ProductDto> {
-        val id = CryptoProvider.decryptGen(encryptedId).toLong()
+        val id = CryptoProvider.decryptText(encryptedId).toLong()
         val productUpdated = service.update(id, data)
         val result = ProductDto(productUpdated)
 
         return ResponseEntity(result, HttpStatus.OK)
     }
 
+    @PreAuthorize("hasAnyAuthority('ADMIN','PRODUCT_DELETE')")
     @Operation(summary = "delete a product")
     @DeleteMapping("/{encryptedId}")
-    @PreAuthorize("hasAnyAuthority('ADMIN')")
     fun delete(@PathVariable("encryptedId") encryptedId: String): ResponseEntity<Any> {
-        val id = CryptoProvider.decryptGen(encryptedId).toLong()
+        val id = CryptoProvider.decryptText(encryptedId).toLong()
         service.delete(id)
         return ResponseEntity(HttpStatus.NO_CONTENT)
     }

@@ -15,16 +15,18 @@ import javax.validation.Valid
 @RequestMapping("/cart")
 class CartController(private val service: CartService) {
 
+    @PreAuthorize("hasAnyAuthority('ADMIN','CART_READ')")
     @Operation(summary = "find a cart by id")
     @GetMapping("/{encryptedId}")
     fun findOne(@PathVariable("encryptedId") encryptedId: String): ResponseEntity<CartDto> {
-        val id = CryptoProvider.decryptGen(encryptedId).toLong()
+        val id = CryptoProvider.decryptText(encryptedId).toLong()
         val cart = service.findOne(id)
         val result = CartDto(cart)
 
         return ResponseEntity(result, HttpStatus.OK)
     }
 
+    @PreAuthorize("hasAnyAuthority('ADMIN','CART_READ')")
     @Operation(summary = "returns all carts")
     @GetMapping("/")
     fun findAll(): ResponseEntity<List<CartDto>> {
@@ -35,9 +37,9 @@ class CartController(private val service: CartService) {
         return ResponseEntity(resultList, HttpStatus.OK)
     }
 
+    @PreAuthorize("hasAnyAuthority('ADMIN','CART_WRITE')")
     @Operation(summary = "create a cart")
     @PostMapping("/")
-    @PreAuthorize("hasAnyAuthority('ADMIN')")
     fun create(@RequestBody @Valid data: EditCartDto): ResponseEntity<CartDto> {
         val cartSaved = service.create(data)
         val result = CartDto(cartSaved)
@@ -45,9 +47,9 @@ class CartController(private val service: CartService) {
         return ResponseEntity(result, HttpStatus.CREATED)
     }
 
+    @PreAuthorize("hasAnyAuthority('ADMIN','CART_WRITE')")
     @Operation(summary = "create batch carts")
     @PostMapping("/create-in-batch")
-    @PreAuthorize("hasAnyAuthority('ADMIN')")
     fun createInBatch(@RequestBody @Valid data: List<EditCartDto>):
             ResponseEntity<List<CartDto>> {
         val cartListSaved = service.createInBatch(data)
@@ -56,23 +58,23 @@ class CartController(private val service: CartService) {
         return ResponseEntity(resultList, HttpStatus.CREATED)
     }
 
+    @PreAuthorize("hasAnyAuthority('ADMIN','CART_WRITE')")
     @Operation(summary = "update a cart")
     @PutMapping("/{encryptedId}")
-    @PreAuthorize("hasAnyAuthority('ADMIN')")
     fun update(@PathVariable("encryptedId") encryptedId: String, @RequestBody @Valid data: EditCartDto):
             ResponseEntity<CartDto> {
-        val id = CryptoProvider.decryptGen(encryptedId).toLong()
+        val id = CryptoProvider.decryptText(encryptedId).toLong()
         val cartUpdated = service.update(id, data)
         val result = CartDto(cartUpdated)
 
         return ResponseEntity(result, HttpStatus.OK)
     }
 
+    @PreAuthorize("hasAnyAuthority('ADMIN','CART_DELETE')")
     @Operation(summary = "delete a cart")
     @DeleteMapping("/{encryptedId}")
-    @PreAuthorize("hasAnyAuthority('ADMIN')")
     fun delete(@PathVariable("encryptedId") encryptedId: String): ResponseEntity<Any> {
-        val id = CryptoProvider.decryptGen(encryptedId).toLong()
+        val id = CryptoProvider.decryptText(encryptedId).toLong()
         service.delete(id)
         return ResponseEntity(HttpStatus.NO_CONTENT)
     }
