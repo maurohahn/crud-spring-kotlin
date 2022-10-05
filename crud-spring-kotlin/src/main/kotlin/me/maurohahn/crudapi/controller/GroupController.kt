@@ -73,7 +73,7 @@ class GroupController(private val service: GroupService) {
     @PreAuthorize("hasAnyAuthority('ADMIN','GROUP_DELETE')")
     @Operation(summary = "delete a group")
     @DeleteMapping("/{encryptedId}")
-    fun delete(@PathVariable("encryptedId") encryptedId: String): ResponseEntity<Any> {
+    fun delete(@PathVariable("encryptedId") encryptedId: String): ResponseEntity<Unit> {
         val id = CryptoProvider.decryptText(encryptedId).toLong()
         service.delete(id)
         return ResponseEntity(HttpStatus.NO_CONTENT)

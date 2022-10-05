@@ -31,12 +31,9 @@ class Product : BaseEntity() {
     @Column(name = "is_active")
     var isActive: Boolean? = null
 
-//    @ManyToMany(fetch = FetchType.LAZY, cascade = [CascadeType.DETACH], mappedBy = "products")
-//    var carts : MutableSet<Cart> = mutableSetOf()
-
     @PostLoad
     @PostPersist
-    fun onGetFromDB() {
+    private fun onGetFromDB() {
         encryptedId = CryptoProvider.encryptText(id.toString())
     }
 

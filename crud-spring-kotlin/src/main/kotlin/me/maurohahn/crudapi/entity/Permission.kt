@@ -27,7 +27,7 @@ class Permission : BaseEntity() {
 
     @PostLoad
     @PostPersist
-    fun onGetFromDB() {
+    private fun onGetFromDB() {
         encryptedId = CryptoProvider.encryptText(id.toString())
     }
 }

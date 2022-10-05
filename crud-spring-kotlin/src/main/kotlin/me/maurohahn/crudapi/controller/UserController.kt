@@ -79,7 +79,7 @@ class UserController(private val service: UserService) {
     fun resetUserPassword(
         authentication: AuthenticationToken,
         @RequestBody @Valid data: CredentialsDto
-    ): ResponseEntity<Any> {
+    ): ResponseEntity<Unit> {
         service.resetUserPassword(authentication.getToken(), data)
         return ResponseEntity(HttpStatus.NO_CONTENT)
     }
@@ -87,7 +87,7 @@ class UserController(private val service: UserService) {
     @PreAuthorize("hasAnyAuthority('ADMIN','USER_DELETE')")
     @Operation(summary = "delete a user")
     @DeleteMapping("/{encryptedId}")
-    fun delete(@PathVariable("encryptedId") encryptedId: String): ResponseEntity<Any> {
+    fun delete(@PathVariable("encryptedId") encryptedId: String): ResponseEntity<Unit> {
         val id = CryptoProvider.decryptText(encryptedId).toLong()
         service.delete(id)
         return ResponseEntity(HttpStatus.NO_CONTENT)

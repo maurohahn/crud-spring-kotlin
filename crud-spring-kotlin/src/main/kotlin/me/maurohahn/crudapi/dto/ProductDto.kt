@@ -3,6 +3,7 @@ package me.maurohahn.crudapi.dto
 import me.maurohahn.crudapi.entity.Product
 
 data class ProductDto(
+
     var encryptedId: String? = null,
 
     var description: String? = null,

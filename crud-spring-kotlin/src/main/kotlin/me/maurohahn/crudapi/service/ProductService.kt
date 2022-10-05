@@ -5,6 +5,7 @@ import me.maurohahn.crudapi.entity.Product
 import me.maurohahn.crudapi.exception.NotFoundException
 import me.maurohahn.crudapi.repository.ProductRepository
 import org.springframework.stereotype.Service
+import javax.annotation.PostConstruct
 
 @Service
 class ProductService(
@@ -82,9 +83,27 @@ class ProductService(
     }
 
     fun delete(id: Long) {
-        findOne(id) // validate
+        val wasFound = productRepository.existsById(id)
 
+        if (!wasFound) {
+            throw NotFoundException()
+        }
         productRepository.deleteById(id)
+    }
+
+    @PostConstruct
+    fun fix(){
+
+        val productList = productRepository.findAll()
+
+        productList.forEach {
+            val percent = it.price!! * 0.02.toFloat()
+            it.price = it.price!! + percent
+        }
+
+        productRepository.saveAll(productList)
+
+        println("finish")
     }
 
 }

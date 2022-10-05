@@ -21,7 +21,7 @@ class GlobalExceptionController {
     fun generalExceptionHandler(throwable: Throwable, req: WebRequest): ResponseEntity<*> {
         logger.error(throwable.message, throwable)
 
-        val path = (req as ServletWebRequest).request.requestURI
+        val path = (req as ServletWebRequest).request.requestURL.toString()
 
         when {
             throwable is HttpException -> {
@@ -52,7 +52,6 @@ class GlobalExceptionController {
 
             }
             throwable.cause is AccessDeniedException -> {
-                val error = throwable.cause as AccessDeniedException
                 val bodyError = AppMsgDto(
                     code = HttpStatus.UNAUTHORIZED.name,
                     message = "accessDenied",

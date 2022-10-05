@@ -81,10 +81,12 @@ class GroupService(
     }
 
     fun delete(id: Long) {
-        findOne(id) // validate
+        val wasFound = groupRepository.existsById(id)
 
+        if (!wasFound) {
+            throw NotFoundException()
+        }
         groupRepository.deleteById(id)
     }
-
 
 }

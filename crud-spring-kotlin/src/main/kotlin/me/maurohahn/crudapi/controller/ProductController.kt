@@ -75,7 +75,7 @@ class ProductController(private val service: ProductService) {
     @PreAuthorize("hasAnyAuthority('ADMIN','PRODUCT_DELETE')")
     @Operation(summary = "delete a product")
     @DeleteMapping("/{encryptedId}")
-    fun delete(@PathVariable("encryptedId") encryptedId: String): ResponseEntity<Any> {
+    fun delete(@PathVariable("encryptedId") encryptedId: String): ResponseEntity<Unit> {
         val id = CryptoProvider.decryptText(encryptedId).toLong()
         service.delete(id)
         return ResponseEntity(HttpStatus.NO_CONTENT)

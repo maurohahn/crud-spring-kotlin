@@ -12,10 +12,10 @@ class CustomerService(
 ) {
 
     fun verifyOne(id: Long) {
-        val wasFound = customerRepository.existsById(id)
+        val wasFound = customerRepository.existsByIdAndIsActiveTrue(id)
 
         if (!wasFound) {
-            throw NotFoundException()
+            throw NotFoundException("notFound or isNotActive")
         }
 
     }
@@ -97,8 +97,11 @@ class CustomerService(
     }
 
     fun delete(id: Long) {
-        findOne(id) // validate
+        val wasFound = customerRepository.existsById(id)
 
+        if (!wasFound) {
+            throw NotFoundException()
+        }
         customerRepository.deleteById(id)
     }
 

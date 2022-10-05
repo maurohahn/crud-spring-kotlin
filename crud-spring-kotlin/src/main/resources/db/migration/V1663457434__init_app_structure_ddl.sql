@@ -19,7 +19,15 @@ create sequence customers_seq
   start 1
   cache 1;
 
-create sequence carts_seq
+create sequence orders_seq
+  increment 1
+  minvalue 1
+  -- max value bigint = 9223372036854775807
+  maxvalue 9223372036854775807
+  start 1
+  cache 1;
+
+create sequence order_items_seq
   increment 1
   minvalue 1
   -- max value bigint = 9223372036854775807
@@ -59,19 +67,22 @@ create table customers (
 	constraint customers_cpf_unique unique (cpf)
 );
 
-create table carts (
-    id bigint primary key default nextval('carts_seq'),
+create table orders (
+    id bigint primary key default nextval('orders_seq'),
     customer_id bigint not null,
     created_at timestamp not null default current_timestamp,
     updated_at timestamp not null,
-    constraint carts_customer_id_fkey foreign key (customer_id) references customers(id) on delete restrict on update cascade
+    constraint orders_customer_id_fkey foreign key (customer_id) references customers(id) on delete restrict on update cascade
 );
 
-create table products_carts (
+create table order_items (
+    id bigint primary key default nextval('order_items_seq'),
+	order_id bigint,
 	product_id bigint not null,
-	cart_id bigint not null,
+	quantity int not null,
     created_at timestamp not null default current_timestamp,
-    constraint products_carts_product_id_fkey foreign key (product_id) references products(id) on delete restrict on update cascade,
-    constraint products_carts_cart_id_fkey foreign key (cart_id) references carts(id) on delete restrict on update cascade
+    updated_at timestamp not null,
+    constraint order_items_order_id_fkey foreign key (order_id) references orders(id) on delete restrict on update cascade,
+    constraint order_items_product_id_fkey foreign key (product_id) references products(id) on delete restrict on update cascade
 );
 

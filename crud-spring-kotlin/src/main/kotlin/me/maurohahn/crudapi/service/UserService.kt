@@ -116,8 +116,11 @@ class UserService(
     }
 
     fun delete(id: Long) {
-        findOne(id) // validate
+        val wasFound = userRepository.existsById(id)
 
+        if (!wasFound) {
+            throw NotFoundException()
+        }
         userRepository.deleteById(id)
     }
 
