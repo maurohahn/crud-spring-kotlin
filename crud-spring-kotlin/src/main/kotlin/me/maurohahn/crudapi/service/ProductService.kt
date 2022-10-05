@@ -91,19 +91,4 @@ class ProductService(
         productRepository.deleteById(id)
     }
 
-    @PostConstruct
-    fun fix(){
-
-        val productList = productRepository.findAll()
-
-        productList.forEach {
-            val percent = it.price!! * 0.02.toFloat()
-            it.price = it.price!! + percent
-        }
-
-        productRepository.saveAll(productList)
-
-        println("finish")
-    }
-
 }
